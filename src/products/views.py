@@ -1,28 +1,70 @@
-from django.http import Http404
+import os
+from mimetypes import guess_type
+from django.conf import settings
+from django.core.servers.basehttp import FileWrapper
+from django.core.urlresolvers import reverse
+from django.db.models import Q
+from django.http import Http404, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 # Create your views here.
-from digitalmarket.mixins import MultipleSlugMixin, SubmitBtnMixin
+from digitalmarket.mixins import MultipleSlugMixin, SubmitBtnMixin, LoginRequiredMixin, StaffRequiredMixin
 from .forms import ProductAddForm, ProductModelForm
 from .models import Product
+from .mixins import ProductManagerMixin
 
 
-class ProductCreateView(SubmitBtnMixin, CreateView):
+class ProductCreateView(LoginRequiredMixin, SubmitBtnMixin, CreateView):
     model = Product
     template_name = 'form.html'
     form_class = ProductModelForm
-    success_url = "/products/add"
+    #success_url = "/products/add"
     submit_btn = 'Add Product'
 
+    def form_valid(self, form):
+        user = self.request.user
+        form.instance.user = user
+        valid_data = super(ProductCreateView, self).form_valid(form)
+        return valid_data
 
-class ProductUpdateView(SubmitBtnMixin, MultipleSlugMixin, UpdateView):
+    def get_success_url(self):
+        return reverse("list_view")
+
+
+class ProductUpdateView(ProductManagerMixin, LoginRequiredMixin, SubmitBtnMixin, MultipleSlugMixin, UpdateView):
     model = Product
     template_name = 'form.html'
     form_class = ProductModelForm
     success_url = "/products/"
     submit_btn = 'Update Product'
+
+
+class ProductDownloadView(MultipleSlugMixin, DetailView):
+    model = Product
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj in request.user.myproducts.all():
+            filepath = os.path.join(settings.PROTECTED_ROOT, obj.media.path)
+            print filepath
+            guessed_type = guess_type(filepath)[0]
+            print guess_type(filepath)
+            wrapper = FileWrapper(file(filepath))
+            mimetype = 'application/force-download'
+            # response["Content-Disposition"] = "attachment; filename=%s" % (obj.media.name)
+            if guessed_type:
+                mimetype = guessed_type
+            response = HttpResponse(wrapper, content_type=mimetype)
+
+            if not request.GET.get("preview"):
+                response["Content-Disposition"] = "attachment; filename=%s" % (obj.media.name)
+
+            response['X-SendFile'] = str(obj.media.name)
+            return response
+        else:
+            raise Http404
 
 
 class ProductDetailView(MultipleSlugMixin, DetailView):
@@ -34,6 +76,11 @@ class ProductListView(ListView):
 
     def get_queryset(self):
         qs = super(ProductListView, self).get_queryset()
+        query = self.request.GET.get('q')
+        qs = qs.filter(
+            Q(title__icontains=query) |
+            Q(description__icontains=query)
+            ).order_by("-title")
         # qs = qs.filter(title__icontains="test")
         return qs
 
