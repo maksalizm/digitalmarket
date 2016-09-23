@@ -77,10 +77,11 @@ class ProductListView(ListView):
     def get_queryset(self):
         qs = super(ProductListView, self).get_queryset()
         query = self.request.GET.get('q')
-        qs = qs.filter(
-            Q(title__icontains=query) |
-            Q(description__icontains=query)
-            ).order_by("-title")
+        if query:
+            qs = qs.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query)
+                ).order_by("-title")
         # qs = qs.filter(title__icontains="test")
         return qs
 

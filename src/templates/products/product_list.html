@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block style %}
+
+{% endblock style %}
+
+
 {% block content %}
 
 <h1>Products</h1>
@@ -11,7 +16,14 @@
 </p>
 <ul>
     {% for instance in object_list %}
-        <li>{{ instance }} - {{ instance.description }} {{ instance.price }}</li>
+        <li class="{% cycle 'abc' 'def' '' 'abc' %}">
+            <a href="{{ instance.get_absolute_url }}">{{ instance.title }}</a>
+            <br/>
+            <!--{{ "http://www.abc.com"|urlize }}-->
+            {{ instance.description|truncatechars:10 }}
+            <br/>
+            {{ instance.price }}
+        </li>
     {% empty %}
         <li> No Products yet.</li>
     {% endfor %}
