@@ -46,7 +46,7 @@ class ProductDownloadView(MultipleSlugMixin, DetailView):
 
     def get(self, request, *args, **kwargs):
         obj = self.get_object()
-        if obj in request.user.myproducts.all():
+        if obj in request.user.myproducts.products.all():
             filepath = os.path.join(settings.PROTECTED_ROOT, obj.media.path)
             print filepath
             guessed_type = guess_type(filepath)[0]
