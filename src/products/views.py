@@ -21,17 +21,23 @@ class ProductCreateView(LoginRequiredMixin, SubmitBtnMixin, CreateView):
     model = Product
     template_name = 'form.html'
     form_class = ProductModelForm
-    #success_url = "/products/add"
+    # success_url = "/products/add"
     submit_btn = 'Add Product'
 
     def form_valid(self, form):
         user = self.request.user
         form.instance.user = user
         valid_data = super(ProductCreateView, self).form_valid(form)
+        tags = form.cleaned_data.get('tags')
+        if tags:
+            tags_list = tags.split(",")
+            for tag in tags_list:
+                new_tag = Tag.objects.get_or_create(title=str(tag).strip())[0]
+                new_tag.products.add(form.instance)
         return valid_data
 
-    # def get_success_url(self):
-    #     return reverse("products:detail")
+        # def get_success_url(self):
+        #     return reverse("products:detail")
 
 
 class ProductUpdateView(ProductManagerMixin, LoginRequiredMixin, SubmitBtnMixin, MultipleSlugMixin, UpdateView):
@@ -52,12 +58,15 @@ class ProductUpdateView(ProductManagerMixin, LoginRequiredMixin, SubmitBtnMixin,
     def form_valid(self, form):
         valid_data = super(ProductUpdateView, self).form_valid(form)
         tags = form.cleaned_data.get('tags')
+        obj = self.get_object()
+        obj.tag_set.clear()
         if tags:
             tags_list = tags.split(",")
             for tag in tags_list:
                 new_tag = Tag.objects.get_or_create(title=str(tag).strip())[0]
                 new_tag.products.add(self.get_object())
         return valid_data
+
 
 class ProductDownloadView(MultipleSlugMixin, DetailView):
     model = Product
@@ -99,7 +108,7 @@ class ProductListView(ListView):
             qs = qs.filter(
                 Q(title__icontains=query) |
                 Q(description__icontains=query)
-                ).order_by("-title")
+            ).order_by("-title")
         # qs = qs.filter(title__icontains="test")
         return qs
 
