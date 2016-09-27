@@ -4,6 +4,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 # Create your views here.
 
+from analtyics.models import TagView
 from .models import Tag
 
 
@@ -12,8 +13,10 @@ class TagDetailView(DetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(TagDetailView, self).get_context_data(*args, **kwargs)
-        print context
-        print self.get_object().products.count()
+        if self.request.user.is_authenticated():
+            tag = self.get_object()
+            new_view = TagView.objects.add_count(self.request.user, tag)
+
         return context
 
 
@@ -21,5 +24,4 @@ class TagListView(ListView):
     model = Tag
 
     def get_queryset(self):
-        return Tag.objects.filter(active=True)
-
+        return Tag.objects.all()

@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'products',
     'tags',
+    'analtyics',
 )
 
 MIDDLEWARE_CLASSES = (

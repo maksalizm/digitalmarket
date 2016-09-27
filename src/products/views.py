@@ -10,6 +10,7 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 # Create your views here.
+from analtyics.models import TagView
 from digitalmarket.mixins import MultipleSlugMixin, SubmitBtnMixin, LoginRequiredMixin, StaffRequiredMixin
 from .forms import ProductAddForm, ProductModelForm
 from .models import Product
@@ -96,6 +97,20 @@ class ProductDownloadView(MultipleSlugMixin, DetailView):
 
 class ProductDetailView(MultipleSlugMixin, DetailView):
     model = Product
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ProductDetailView, self).get_context_data(*args, **kwargs)
+        obj = self.get_object()
+        tags = obj.tag_set.all()
+        for tag in tags:
+            new_view = TagView.objects.add_count(self.request.user, tag)
+            # new_view = TagView.objects.get_or_create(
+            #     user=self.request.user,
+            #     tag=tag,
+            # )[0]
+            # new_view.count += 1
+            # new_view.save()
+        return context
 
 
 class ProductListView(ListView):
