@@ -41,6 +41,7 @@ class ProductAddForm(forms.Form):
 
 
 class ProductModelForm(forms.ModelForm):
+    tags = forms.CharField(label="Related tags", required=False)
     publish = forms.ChoiceField(widget=forms.RadioSelect, choices=PUBLISH_CHOICES, required=False)
 
     class Meta:
@@ -48,7 +49,7 @@ class ProductModelForm(forms.ModelForm):
         fields = [
             "title",
             "description",
-            "price"
+            "price",
         ]
         widgets = {
             "description": forms.Textarea(
