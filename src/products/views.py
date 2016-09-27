@@ -29,8 +29,8 @@ class ProductCreateView(LoginRequiredMixin, SubmitBtnMixin, CreateView):
         valid_data = super(ProductCreateView, self).form_valid(form)
         return valid_data
 
-    def get_success_url(self):
-        return reverse("list_view")
+    # def get_success_url(self):
+    #     return reverse("products:detail")
 
 
 class ProductUpdateView(ProductManagerMixin, LoginRequiredMixin, SubmitBtnMixin, MultipleSlugMixin, UpdateView):

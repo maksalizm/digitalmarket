@@ -7,6 +7,7 @@ from django.utils.text import slugify
 
 from products.models import Product
 
+
 class Tag(models.Model):
     title = models.CharField(max_length=120, unique=True)
     slug = models.SlugField(unique=True)
@@ -19,6 +20,9 @@ class Tag(models.Model):
     def get_absolute_url(self):
         view_name = "tags:detail"
         return reverse(view_name, kwargs={"slug": self.slug})
+
+    def get_object(self):
+        pass
 
 
 def tag_pre_save_receiver(sender, instance, *args, **kwargs):
