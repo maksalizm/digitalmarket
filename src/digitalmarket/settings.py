@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'products',
     'tags',
     'analtyics',
+    'dashboard',
 )
 
 MIDDLEWARE_CLASSES = (

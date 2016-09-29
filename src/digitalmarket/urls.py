@@ -18,8 +18,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.conf import settings
 
+from dashboard.views import DashboardView
 
 urlpatterns = [
+    url(r'^$', DashboardView.as_view(), name="dashboard"),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^products/', include("products.urls", namespace="products")),
     url(r'^tags/', include("tags.urls", namespace="tags")),
